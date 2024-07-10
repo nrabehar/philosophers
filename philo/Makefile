@@ -8,7 +8,12 @@ INC_DIR = inc
 
 # Sources files
 SRCS = main.c \
-	utils.c
+	ph_utils.c \
+	ph_setting.c \
+	ph_forks.c \
+	ph_action.c \
+	ph_routine.c \
+	ph_monitor.c
 
 OBJS = ${addprefix ${OBJ_DIR}/, ${SRCS:.c=.o}}
 
@@ -25,6 +30,7 @@ ${OBJ_DIR}/%.o : ${SRC_DIR}/%.c
 ${NAME} : ${OBJS}
 	${CC} ${CFLAGS} ${OBJS} -o ${NAME} ${CLINKS}
 
+
 all	: ${NAME}
 
 clean :
@@ -35,5 +41,9 @@ fclean : clean
 	rm -f ${NAME}
 
 re : fclean all
+
+# Tests
+leak : fclean $(NAME)
+	valgrind --tool=helgrind --history-level=approx ./$(NAME) 8 310 200 100
 
 .PHONY : all clean fclean re
