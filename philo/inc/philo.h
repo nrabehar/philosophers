@@ -6,7 +6,7 @@
 /*   By: nrabehar <nrabehar@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/21 08:27:25 by nrabehar          #+#    #+#             */
-/*   Updated: 2024/07/10 17:18:54 by nrabehar         ###   ########.fr       */
+/*   Updated: 2024/07/11 10:23:33 by nrabehar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@ int					validate_args(int ac, char **av);
 int					ph_init_data(int ac, char **av, t_data *data);
 int					ph_init_mutex(t_data *data);
 void				ph_destroy_mutex(t_data *data);
+int					ph_print(t_philo *philo, char *state, int(can)(t_philo *));
 
 // Routine
 
@@ -79,6 +80,7 @@ void				ph_take_fork(t_philo *philo);
 void				ph_eating_action(t_philo *philo);
 void				ph_sleeping_action(t_philo *philo);
 void				ph_thinking_action(t_philo *philo);
+int					ph_can_continue(t_philo *philo);
 void				*ph_routine(void *arg);
 void				*ph_monitor(void *arg);
 

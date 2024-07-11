@@ -6,7 +6,7 @@
 /*   By: nrabehar <nrabehar@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:23:33 by nrabehar          #+#    #+#             */
-/*   Updated: 2024/07/10 17:17:08 by nrabehar         ###   ########.fr       */
+/*   Updated: 2024/07/11 10:37:20 by nrabehar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,4 +70,22 @@ void	ph_msleep(long ms, t_data *data)
 		pthread_mutex_unlock(&data->routine_lock);
 		usleep(100);
 	}
+}
+
+int	ph_print(t_philo *philo, char *state, int(can)(t_philo *))
+{
+	long	time;
+	int		id;
+
+	pthread_mutex_lock(&philo->data->print_lock);
+	time = ph_get_time() - philo->t_start;
+	id = philo->id + 1;
+	if (!can(philo))
+	{
+		pthread_mutex_unlock(&philo->data->print_lock);
+		return (-1);
+	}
+	printf("%ld %d %s\n", time, id, state);
+	pthread_mutex_unlock(&philo->data->print_lock);
+	return (0);
 }
