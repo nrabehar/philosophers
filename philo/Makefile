@@ -12,15 +12,14 @@ SRCS = main.c \
 	ph_setting.c \
 	ph_forks.c \
 	ph_action.c \
-	ph_routine.c \
-	ph_monitor.c
+	ph_observer.c
 
 OBJS = ${addprefix ${OBJ_DIR}/, ${SRCS:.c=.o}}
 
 # Compilations
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror
-CLINKS = -lpthread -I ${INC_DIR}
+CLINKS = -pthread -I ${INC_DIR}
 
 
 ${OBJ_DIR}/%.o : ${SRC_DIR}/%.c
@@ -44,6 +43,6 @@ re : fclean all
 
 # Tests
 leak : fclean $(NAME)
-	valgrind --tool=helgrind --history-level=approx ./$(NAME) 8 310 200 100
+	valgrind --tool=helgrind --history-level=approx ./$(NAME) 4 310 200 100
 
 .PHONY : all clean fclean re

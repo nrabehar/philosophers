@@ -6,7 +6,7 @@
 /*   By: nrabehar <nrabehar@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/21 08:27:25 by nrabehar          #+#    #+#             */
-/*   Updated: 2024/07/11 10:23:33 by nrabehar         ###   ########.fr       */
+/*   Updated: 2024/07/17 16:29:19 by nrabehar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # include <pthread.h>
 # include <stdio.h>
+# include <stdlib.h>
 # include <sys/time.h>
 # include <unistd.h>
 
@@ -26,62 +27,62 @@
 #  define C_RESET "\e[0m"
 # endif
 
-# ifndef PH_MAX
-#  define PH_MAX 242
+# ifndef PH_CONST
+#  define NB_PHILO 0
+#  define T_DIE 1
+#  define T_EAT 2
+#  define T_SLEEP 3
+#  define MUST_EAT 4
+#  define T_THINK 5
+#  define T_START 6
+#  define PH_CONST 7
 # endif
 
 typedef struct s_philo
 {
 	int				id;
 	int				nb_eat;
-	long			t_start;
 	long			last_eat;
+	int				is_eating;
 	pthread_mutex_t	*l_fork;
 	pthread_mutex_t	*r_fork;
-	pthread_mutex_t	*print_lock;
 	pthread_t		thread;
 	struct s_data	*data;
 }					t_philo;
 
 typedef struct s_data
 {
-	int				p_nb;
-	int				must_eat;
-	long			t_die;
-	long			t_eat;
-	long			t_sleep;
+	long			av[PH_CONST];
 	int				all_eat;
 	int				dead;
-	pthread_mutex_t	forks[PH_MAX];
-	t_philo			philo[PH_MAX];
-	pthread_t		monitor;
-	pthread_mutex_t	print_lock;
+	pthread_mutex_t	*forks;
+	t_philo			*philo;
 	pthread_mutex_t	routine_lock;
 }					t_data;
 
 // Utils
 
-void				ft_putstr_fd(int fd, char *s);
+void				ph_error(char *s);
 long				ph_atol(char *s);
 long				ph_get_time(void);
 void				ph_msleep(long ms, t_data *data);
+int					ph_print(t_philo *philo, char *state, int(can)(t_philo *));
 
 // Settings
 
 int					validate_args(int ac, char **av);
 int					ph_init_data(int ac, char **av, t_data *data);
-int					ph_init_mutex(t_data *data);
-void				ph_destroy_mutex(t_data *data);
-int					ph_print(t_philo *philo, char *state, int(can)(t_philo *));
+void				ph_destroy_forks(t_data *data, int limit);
+void				ph_destroy(t_data *data);
 
 // Routine
 
 void				ph_take_fork(t_philo *philo);
-void				ph_eating_action(t_philo *philo);
-void				ph_sleeping_action(t_philo *philo);
-void				ph_thinking_action(t_philo *philo);
+void				ph_drop_fork(t_philo *philo);
+void				ph_eat(t_philo *philo);
+void				ph_sleep(t_philo *philo);
+void				ph_think(t_philo *philo);
 int					ph_can_continue(t_philo *philo);
-void				*ph_routine(void *arg);
-void				*ph_monitor(void *arg);
+int					ph_observe(t_data *data);
 
 #endif

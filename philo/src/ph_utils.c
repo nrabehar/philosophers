@@ -6,22 +6,22 @@
 /*   By: nrabehar <nrabehar@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:23:33 by nrabehar          #+#    #+#             */
-/*   Updated: 2024/07/11 10:37:20 by nrabehar         ###   ########.fr       */
+/*   Updated: 2024/07/16 10:46:37 by nrabehar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	ft_putstr_fd(int fd, char *s)
+void	ph_error(char *s)
 {
-	int	i;
+	size_t	length;
 
-	i = 0;
-	if (!s)
+	length = 0;
+	if (!s || !*s)
 		return ;
-	while (s[i])
-		i++;
-	write(fd, s, i);
+	while (s[length])
+		length++;
+	write(STDERR_FILENO, s, length);
 }
 
 long	ph_atol(char *s)
@@ -38,10 +38,6 @@ long	ph_atol(char *s)
 	return (res);
 }
 
-/// @brief Get current time in milliseconds
-/// add current time in seconds * 1000 to the microseconds divided by 1000
-/// to get the current time in milliseconds
-/// @return Current time in milliseconds
 long	ph_get_time(void)
 {
 	struct timeval	time;
@@ -62,7 +58,7 @@ void	ph_msleep(long ms, t_data *data)
 	while (ph_get_time() - start < ms)
 	{
 		pthread_mutex_lock(&data->routine_lock);
-		if (data->dead == 1)
+		if (data->dead)
 		{
 			pthread_mutex_unlock(&data->routine_lock);
 			break ;
@@ -75,17 +71,15 @@ void	ph_msleep(long ms, t_data *data)
 int	ph_print(t_philo *philo, char *state, int(can)(t_philo *))
 {
 	long	time;
-	int		id;
 
-	pthread_mutex_lock(&philo->data->print_lock);
-	time = ph_get_time() - philo->t_start;
-	id = philo->id + 1;
+	pthread_mutex_lock(&philo->data->routine_lock);
+	time = ph_get_time() - philo->data->av[T_START];
 	if (!can(philo))
 	{
-		pthread_mutex_unlock(&philo->data->print_lock);
+		pthread_mutex_unlock(&philo->data->routine_lock);
 		return (-1);
 	}
-	printf("%ld %d %s\n", time, id, state);
-	pthread_mutex_unlock(&philo->data->print_lock);
+	printf("%ld %d %s\n", time, philo->id, state);
+	pthread_mutex_unlock(&philo->data->routine_lock);
 	return (0);
 }
