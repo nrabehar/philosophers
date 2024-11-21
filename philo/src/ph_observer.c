@@ -6,23 +6,25 @@
 /*   By: nrabehar <nrabehar@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 15:05:38 by nrabehar          #+#    #+#             */
-/*   Updated: 2024/07/17 16:31:45 by nrabehar         ###   ########.fr       */
+/*   Updated: 2024/07/23 11:36:06 by nrabehar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-static int	ph_is_dead(t_philo *philo)
+static int	ph_should_die(t_philo *philo)
 {
 	long	time;
 
 	if (philo->data->dead)
 		return (1);
-	if (ph_get_time() - philo->last_eat >= philo->data->av[T_DIE]
-		&& !philo->is_eating)
+	if (!philo->is_eating && ph_get_time()
+		- philo->last_eat >= philo->data->av[T_DIE])
 	{
 		time = ph_get_time() - philo->data->av[T_START];
+		pthread_mutex_lock(&philo->data->print_lock);
 		printf("%ld %d died\n", time, philo->id);
+		pthread_mutex_unlock(&philo->data->print_lock);
 		philo->data->dead = 1;
 		return (1);
 	}
@@ -31,15 +33,18 @@ static int	ph_is_dead(t_philo *philo)
 
 static int	ph_is_satisfied(t_philo *philo)
 {
-	if (philo->data->av[MUST_EAT] >= 0
-		&& philo->nb_eat >= philo->data->av[MUST_EAT])
+	if (!philo->stop && philo->nb_eat == philo->data->av[MUST_EAT])
+	{
+		philo->data->all_eat++;
+		philo->stop = 1;
 		return (1);
+	}
 	return (0);
 }
 
 static int	ph_is_all_eat(t_data *data)
 {
-	if (data->av[MUST_EAT] > 0 && data->all_eat >= data->av[NB_PHILO])
+	if (data->all_eat == data->av[NB_PHILO])
 	{
 		data->dead = 1;
 		return (1);
@@ -49,13 +54,14 @@ static int	ph_is_all_eat(t_data *data)
 
 int	ph_can_continue(t_philo *philo)
 {
-	if (ph_is_dead(philo))
-		return (0);
-	if (ph_is_satisfied(philo))
-		return (0);
-	if (ph_is_all_eat(philo->data))
-		return (0);
-	return (1);
+	pthread_mutex_lock(&philo->data->routine_lock);
+	if (!philo->data->dead && !philo->stop)
+	{
+		pthread_mutex_unlock(&philo->data->routine_lock);
+		return (1);
+	}
+	pthread_mutex_unlock(&philo->data->routine_lock);
+	return (0);
 }
 
 int	ph_observe(t_data *data)
@@ -67,22 +73,17 @@ int	ph_observe(t_data *data)
 	while (42)
 	{
 		i = -1;
-		pthread_mutex_lock(&data->routine_lock);
 		while (++i < data->av[NB_PHILO])
 		{
-			if (ph_is_dead(&data->philo[i]))
+			pthread_mutex_lock(&data->routine_lock);
+			if (ph_should_die(&data->philo[i]))
 				return (pthread_mutex_unlock(&data->routine_lock));
+			ph_is_satisfied(&data->philo[i]);
 			if (ph_is_all_eat(data))
 				return (pthread_mutex_unlock(&data->routine_lock));
-			if (data->av[MUST_EAT] >= 0
-				&& data->philo[i].nb_eat == data->av[MUST_EAT])
-			{
-				data->philo[i].nb_eat++;
-				data->all_eat++;
-			}
+			pthread_mutex_unlock(&data->routine_lock);
 		}
-		pthread_mutex_unlock(&data->routine_lock);
-		usleep(1000);
+		usleep(100);
 	}
 	return (0);
 }

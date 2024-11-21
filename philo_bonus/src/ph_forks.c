@@ -6,7 +6,7 @@
 /*   By: nrabehar <nrabehar@student.42antananari    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 10:41:03 by nrabehar          #+#    #+#             */
-/*   Updated: 2024/07/17 14:07:12 by nrabehar         ###   ########.fr       */
+/*   Updated: 2024/07/23 10:13:20 by nrabehar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,11 @@
 void	ph_take_fork(t_philo *philo)
 {
 	sem_wait(philo->data->forks);
+	if (ph_can_continue(philo))
+		ph_print(philo, "has taken a fork");
 	sem_wait(philo->data->forks);
-	if (ph_print(philo, "has taken a fork", ph_can_continue) == -1)
-		return ;
-	if (ph_print(philo, "has taken a fork", ph_can_continue) == -1)
-		return ;
+	if (ph_can_continue(philo))
+		ph_print(philo, "has taken a fork");
 }
 
 void	ph_drop_fork(t_philo *philo)

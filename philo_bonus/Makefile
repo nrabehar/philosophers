@@ -19,7 +19,7 @@ OBJS = ${addprefix ${OBJ_DIR}/, ${SRCS:.c=.o}}
 # Compilations
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror
-CLINKS = -pthread -I ${INC_DIR}
+CLINKS = -lpthread -I ${INC_DIR}
 
 
 ${OBJ_DIR}/%.o : ${SRC_DIR}/%.c
